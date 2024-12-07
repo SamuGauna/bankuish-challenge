@@ -15,6 +15,11 @@ export const AppImports = [
       LOGGER_LEVEL: Joi.string()
         .valid('error', 'warn', 'info', 'debug', 'log', 'silent')
         .default('debug'),
+
+      /**FIREBASE */
+      FIREBASE_CLIENT_EMAIL: Joi.string(),
+      FIREBASE_PROJECT_ID: Joi.string(),
+      FIREBASE_PRIVATE_KEY: Joi.string(),
     }),
   }),
   LoggerModule.forRootAsync({
