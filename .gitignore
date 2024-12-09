@@ -1,5 +1,6 @@
 docker-compose.yml
 src/config/firebase-credentials.json
+Dockerfile
 # compiled output
 /dist
 /node_modules

@@ -2,72 +2,102 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Bankuish Challenge
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+#### This project is the backend implementation for the Bankuish Challenge, a technical assessment demonstrating proficiency with NestJS, TypeScript, and Dockerized environments. The backend processes courses, handles prerequisites, and includes user authentication via Firebase.
 
-## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
+
+* Authentication: Firebase-based authentication and authorization.
+* Endpoints Documentation: Auto-generated Swagger API available at /api.
+* Testing: Includes unit and e2e tests using Jest.
+* Docker Support: Seamless setup with Docker Compose.
+
+## Prerequisites
+
+* Node (v18 or higher recommended)
+* Yarn
+* Docker and Docker Compose
 
 ## Installation
 
-```bash
-$ yarn install
+1. Clone de repository
+```
+git clone https://github.com/SamuGauna/bankuish-challenge.git
+cd bankuish-challenge
+```
+2. Install dependencies
+```
+yarn install
+```
+3. Set environment variables
+```
+cp example.env .env
+```
+#### Key enviroment variables include:
+* NODE_ENV: Application environment (development, test, staging, production). Default is development.
+* APP_PORT: Port on which the app runs.
+* LOGGER_LEVEL: Logging level (error, warn, info, debug, log, silent).
+* DB_HOST: Database host.
+* DB_PORT: Database port.
+* DB_USERNAME: Database username.
+* DB_PASSWORD: Database password.
+* DB_NAME: Database name.
+* FIREBASE_PROJECT_ID: Firebase project ID.
+* FIREBASE_PRIVATE_KEY: Firebase private key.
+* FIREBASE_CLIENT_EMAIL: Firebase client email.
+* FIREBASE_API_KEY: Firebase client API key.
+* FIREBASE_AUTH_DOMAIN: Firebase auth domain.
+
+## Running the Project
+1. Start with Docker Compose
+```
+docker-compose up --build
+```
+2. Start Locally (Non-Docker)
+```
+yarn start:dev
 ```
 
-## Running the app
-
-```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+## Testing
+1. Unit Test
+```
+yarn test
+```
+2. e2e Tests
+```
+yarn test:e2e
+```
+3. Coverage report
+```
+yarn test:cov
 ```
 
-## Test
+## Project Structure
 
-```bash
-# unit tests
-$ yarn run test
+The project adheres to the NestJS default structure, ensuring consistency and maintainability.
 
-# e2e tests
-$ yarn run test:e2e
 
-# test coverage
-$ yarn run test:cov
+## Dependencies
+#### Main Libraries
+* Nest.js
+* TypeORM
+* Firebase
+* Swagger
+* Jest
+#### Dev tools
+* ESLint
+* Prettier
+* Docker Compose
+
+## API Documentation
+Swagger API documentation is available at:
+```
+http://localhost:<APP_PORT>/api
 ```
 
-## Support
+## Notes
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+* Ensure that the .env file is configured correctly before running the project.
+* The project is tailored for the Bankuish Challenge and follows best practices for backend development.

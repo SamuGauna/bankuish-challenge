@@ -1,4 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Course {
@@ -8,6 +14,11 @@ export class Course {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
-  prerequisite: string;
+  @ManyToOne(() => Course, (course) => course.dependentCourses, {
+    nullable: true,
+  })
+  prerequisite: Course;
+
+  @OneToMany(() => Course, (course) => course.prerequisite)
+  dependentCourses: Course[];
 }

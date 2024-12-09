@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CanActivate, ExecutionContext } from '@nestjs/common';
-import { FirebaseService } from './firebase/firebase.service';
+import { FirebaseService } from '../firebase/firebase.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -12,13 +12,19 @@ export class AuthGuard implements CanActivate {
     const authorization = request.headers['authorization'];
 
     if (!authorization) {
-      throw new Error('No authorization header found');
+      throw new HttpException(
+        'No authorization header found',
+        HttpStatus.PRECONDITION_FAILED,
+      );
     }
 
     const [bearer, token] = authorization.split(' ');
 
     if (bearer !== 'Bearer' || !token) {
-      throw new Error('Invalid authorization format');
+      throw new HttpException(
+        'Invalid authorization format',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     try {
@@ -26,7 +32,7 @@ export class AuthGuard implements CanActivate {
       await this.firebaseService.verifyIdToken(token);
       return true;
     } catch (error) {
-      throw new Error('Unauthorized');
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
   }
 }

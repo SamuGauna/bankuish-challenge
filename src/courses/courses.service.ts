@@ -1,10 +1,16 @@
-import { BadRequestException, Injectable, UseGuards } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from './entities/course.entity';
-import { Repository } from 'typeorm';
-import { ProcessCoursesDto } from './dto/process-courses.dto';
+import { In, Repository } from 'typeorm';
+import { CourseItem, ProcessCoursesDto } from './dto/process-courses.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import { CourseOrderResponseDto } from './dto/courseOrderResponse.dto';
 
 @Injectable()
 export class CoursesService {
@@ -13,15 +19,101 @@ export class CoursesService {
     private readonly courseRepository: Repository<Course>,
   ) {}
 
+  async findAll(): Promise<any> {
+    return await this.courseRepository.find();
+  }
+
   @UseGuards(AuthGuard)
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
-    const course = this.courseRepository.create(createCourseDto);
+    const { name, prerequisiteName } = createCourseDto;
+
+    // Validar que no exista un curso con el mismo nombre
+    const existingCourse = await this.courseRepository.findOne({
+      where: { name },
+    });
+    if (existingCourse) {
+      throw new HttpException(
+        'A course with this name already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    let prerequisite: Course = null;
+    if (prerequisiteName) {
+      // Verificar que el curso prerrequisito exista por nombre
+      prerequisite = await this.courseRepository.findOne({
+        where: { name: prerequisiteName },
+      });
+      if (!prerequisite) {
+        throw new HttpException(
+          'Prerequisite course does not exist',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      // Validar que no se cree un ciclo en los prerrequisitos
+      await this.validateNoCycle(prerequisite, name);
+    }
+
+    const course = this.courseRepository.create({ name, prerequisite });
     return this.courseRepository.save(course);
+  }
+
+  async validateNoCycle(prerequisite: Course, currentCourseName: string) {
+    let current = prerequisite;
+
+    while (current) {
+      if (current.name === currentCourseName) {
+        throw new HttpException(
+          'Cyclic dependency detected in prerequisites',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      if (current.prerequisite && typeof current.prerequisite === 'string') {
+        current = await this.courseRepository.findOne({
+          where: { name: current.prerequisite },
+        });
+      } else {
+        break;
+      }
+    }
+  }
+
+  async validateCoursesExist(courses: CourseItem[]): Promise<void> {
+    const courseNames = new Set<string>();
+
+    courses.forEach(({ desiredCourse, requiredCourse }) => {
+      courseNames.add(desiredCourse);
+      if (requiredCourse) {
+        courseNames.add(requiredCourse);
+      }
+    });
+
+    const dbCourses = await this.courseRepository.find({
+      where: { name: In(Array.from(courseNames)) },
+    });
+
+    const dbCourseNames = new Set(dbCourses.map((course) => course.name));
+
+    const invalidCourses = Array.from(courseNames).filter(
+      (courseName) => !dbCourseNames.has(courseName),
+    );
+
+    if (invalidCourses.length > 0) {
+      throw new HttpException(
+        `Invalid courses: ${invalidCourses.join(', ')}`,
+        HttpStatus.CONFLICT,
+      );
+    }
   }
 
   async processCourses({
     courses,
-  }: ProcessCoursesDto): Promise<{ courseOrder: string[] }> {
+  }: ProcessCoursesDto): Promise<CourseOrderResponseDto[]> {
+    // Validar que los cursos existen en la base de datos
+    //await this.validateCoursesExist(courses);
+
     const graph = new Map<string, string[]>();
     const inDegree = new Map<string, number>();
 
@@ -53,9 +145,18 @@ export class CoursesService {
     }
 
     if (order.length !== graph.size) {
-      throw new BadRequestException('Ciclo detectado en los prerrequisitos');
+      throw new HttpException(
+        'Cyclic dependency detected in prerequisites',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    return { courseOrder: order };
+    // Convertir el orden a un arreglo de objetos con índice
+    const formattedOrder = order.map((course, index) => ({
+      course,
+      order: index,
+    }));
+
+    return formattedOrder;
   }
 }
