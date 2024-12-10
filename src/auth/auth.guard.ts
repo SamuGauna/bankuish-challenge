@@ -6,7 +6,6 @@ import { FirebaseService } from '../firebase/firebase.service';
 export class AuthGuard implements CanActivate {
   constructor(private readonly firebaseService: FirebaseService) {}
 
-  // Protege los endpoints y verifica el token
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authorization = request.headers['authorization'];
@@ -28,8 +27,11 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      // Verificamos el token
-      await this.firebaseService.verifyIdToken(token);
+      const decodedToken = await this.firebaseService.verifyIdToken(token);
+      request.user = {
+        id: decodedToken.uid,
+        email: decodedToken.email,
+      };
       return true;
     } catch (error) {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);

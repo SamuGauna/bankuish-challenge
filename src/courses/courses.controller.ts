@@ -5,6 +5,7 @@ import {
   UseGuards,
   HttpStatus,
   Get,
+  Param,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -14,6 +15,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { apiResponseWrapper } from '../utils/factories/apiResponseWrapper.factory';
 import { apiErrorWrapper } from '../utils/factories/apiErrorWrapper.factory';
 import { ErrorResponseDto } from '../utils/dto/error.dto';
+import { GetCoursesDto } from './dto/get-courses.dto';
+import { GetCourseDetailDto } from './dto/get-course-detail.dto';
 
 @ApiTags('Courses')
 @Controller('courses')
@@ -41,7 +44,6 @@ export class CoursesController {
     type: apiErrorWrapper(ErrorResponseDto),
     description: 'Internal server error',
   })
-  @UseGuards(AuthGuard)
   @Post()
   create(@Body() createCourseDto: CreateCourseDto) {
     return this.coursesService.create(createCourseDto);
@@ -74,24 +76,40 @@ export class CoursesController {
     return await this.coursesService.processCourses(ProcessCoursesDto);
   }
 
-  @ApiOperation({ summary: 'Get all courses' })
-  // @ApiResponse({
-  //   status: HttpStatus.CREATED,
-  //   type: apiResponseWrapper(),
-  //   description: 'success',
-  // })
+  @ApiOperation({ summary: 'List all courses' })
   @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    type: apiErrorWrapper(ErrorResponseDto),
-    description: 'Bad request',
+    status: HttpStatus.OK,
+    type: [GetCoursesDto],
+    description: 'Returns a list of all courses',
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
-    type: apiErrorWrapper(ErrorResponseDto),
+    type: ErrorResponseDto,
     description: 'Internal server error',
   })
   @Get()
-  findAll() {
-    return this.coursesService.findAll();
+  async getAllCourses(): Promise<GetCoursesDto[]> {
+    return this.coursesService.getAllCourses();
+  }
+
+  @ApiOperation({ summary: 'Get a course by its ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: GetCourseDetailDto,
+    description: 'Course details fetched successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    type: ErrorResponseDto,
+    description: 'Course not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    type: ErrorResponseDto,
+    description: 'Internal server error',
+  })
+  @Get(':id')
+  async getCourseById(@Param('id') id: string): Promise<GetCourseDetailDto> {
+    return this.coursesService.getCourseById(id);
   }
 }

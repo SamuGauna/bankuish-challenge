@@ -4,6 +4,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { apiResponseWrapper } from '../utils/factories/apiResponseWrapper.factory';
 import { ErrorResponseDto } from '../utils/dto/error.dto';
 import { apiErrorWrapper } from '../utils/factories/apiErrorWrapper.factory';
+import { AuthLoginDto } from './dto/auth-login.dto';
 
 @ApiTags('Auth login client')
 @Controller('auth')
@@ -27,11 +28,8 @@ export class AuthController {
     description: 'Internal server error',
   })
   @Post('login')
-  async login(
-    @Body('email') email: string,
-    @Body('password') password: string,
-  ) {
-    const res = await this.firebaseClientService.login(email, password);
+  async login(@Body() loginData: AuthLoginDto) {
+    const res = await this.firebaseClientService.login(loginData);
     return res;
   }
 }

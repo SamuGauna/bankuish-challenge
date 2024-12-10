@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
 
@@ -18,13 +18,15 @@ export class FirebaseService {
     }
   }
 
-  // Verificación del token de Firebase
   async verifyIdToken(idToken: string) {
     try {
       const decodedToken = await admin.auth().verifyIdToken(idToken);
       return decodedToken;
     } catch (error) {
-      throw new Error('Invalid Firebase ID Token');
+      throw new HttpException(
+        'Invalid Firebase ID Token',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
   }
 }

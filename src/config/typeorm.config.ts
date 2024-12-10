@@ -8,7 +8,7 @@ export const TypeOrmConfig = (config: ConfigService): TypeOrmModuleOptions => ({
   username: config.get('DB_USERNAME'),
   password: config.get('DB_PASSWORD'),
   database: config.get('DB_NAME'),
-  entities: [`${__dirname}/../**/*.entity{.ts,.js}`], // Cargar todas las entidades
-  synchronize: config.get<boolean>('DB_SYNCHRONIZE'), // Siempre en false para producción
+  entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
+  synchronize: config.get<boolean>('DB_SYNCHRONIZE'),
   logging: ['error', 'warn'],
 });

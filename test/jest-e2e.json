@@ -4,11 +4,7 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "moduleFileExtensions": [
-    "ts",
-    "js",
-    "json"
-  ],
+  "moduleFileExtensions": ["ts", "js", "json"],
   "testEnvironment": "node",
   "coverageDirectory": "../coverage"
 }

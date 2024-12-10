@@ -1,0 +1,33 @@
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: bankuish_postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: bankuish
+      POSTGRES_PASSWORD: bankuish123
+      POSTGRES_DB: bankuish
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nestjs:
+    build: .
+    container_name: bankuish_nestjs
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=bankuish
+      - DB_PASSWORD=bankuish123
+      - DB_NAME=bankuish
+
+volumes:
+  postgres_data:
+
+
+

@@ -5,8 +5,16 @@ describe('CoursesService', () => {
   let service: CoursesService;
 
   beforeEach(async () => {
+    const mockCourseRepository = {
+      find: jest.fn(),
+      save: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CoursesService],
+      providers: [
+        CoursesService,
+        { provide: 'CourseRepository', useValue: mockCourseRepository },
+      ],
     }).compile();
 
     service = module.get<CoursesService>(CoursesService);

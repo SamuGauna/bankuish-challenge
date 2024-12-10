@@ -9,7 +9,7 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     const mockAuthGuard = {
-      canActivate: jest.fn(() => true), // Burlar el guard para permitir acceso
+      canActivate: jest.fn(() => true),
     };
 
     const mockUsersService = {

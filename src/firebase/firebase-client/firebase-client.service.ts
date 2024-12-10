@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { AuthLoginDto } from 'src/auth/dto/auth-login.dto';
 
 @Injectable()
 export class FirebaseClientService {
@@ -18,13 +19,13 @@ export class FirebaseClientService {
     this.auth = getAuth(this.app);
   }
 
-  async login(email: string, password: string): Promise<string> {
+  async login(logindata: AuthLoginDto): Promise<any> {
     const userCredential = await signInWithEmailAndPassword(
       this.auth,
-      email,
-      password,
+      logindata.email,
+      logindata.password,
     );
     const token = await userCredential.user.getIdToken();
-    return token;
+    return { token };
   }
 }

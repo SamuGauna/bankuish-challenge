@@ -1,16 +1,12 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  UseGuards,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from './entities/course.entity';
 import { In, Repository } from 'typeorm';
 import { CourseItem, ProcessCoursesDto } from './dto/process-courses.dto';
-import { AuthGuard } from '../auth/auth.guard';
 import { CourseOrderResponseDto } from './dto/courseOrderResponse.dto';
+import { GetCoursesDto } from './dto/get-courses.dto';
+import { GetCourseDetailDto } from './dto/get-course-detail.dto';
 
 @Injectable()
 export class CoursesService {
@@ -19,15 +15,30 @@ export class CoursesService {
     private readonly courseRepository: Repository<Course>,
   ) {}
 
-  async findAll(): Promise<any> {
-    return await this.courseRepository.find();
+  async getAllCourses(): Promise<GetCoursesDto[]> {
+    const courses = await this.courseRepository.find();
+    return courses.map((course) => ({
+      id: course.id,
+      name: course.name,
+      prerequisiteId: course.prerequisite?.id || null,
+    }));
   }
 
-  @UseGuards(AuthGuard)
+  async getCourseById(id: string): Promise<GetCourseDetailDto> {
+    const course = await this.courseRepository.findOne({ where: { id } });
+    if (!course) {
+      throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
+    }
+
+    return {
+      id: course.id,
+      name: course.name,
+      prerequisiteId: course.prerequisite?.id || null,
+    };
+  }
+
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
     const { name, prerequisiteName } = createCourseDto;
-
-    // Validar que no exista un curso con el mismo nombre
     const existingCourse = await this.courseRepository.findOne({
       where: { name },
     });
@@ -40,7 +51,6 @@ export class CoursesService {
 
     let prerequisite: Course = null;
     if (prerequisiteName) {
-      // Verificar que el curso prerrequisito exista por nombre
       prerequisite = await this.courseRepository.findOne({
         where: { name: prerequisiteName },
       });
@@ -50,11 +60,8 @@ export class CoursesService {
           HttpStatus.CONFLICT,
         );
       }
-
-      // Validar que no se cree un ciclo en los prerrequisitos
       await this.validateNoCycle(prerequisite, name);
     }
-
     const course = this.courseRepository.create({ name, prerequisite });
     return this.courseRepository.save(course);
   }
@@ -111,13 +118,11 @@ export class CoursesService {
   async processCourses({
     courses,
   }: ProcessCoursesDto): Promise<CourseOrderResponseDto[]> {
-    // Validar que los cursos existen en la base de datos
-    //await this.validateCoursesExist(courses);
+    // await this.validateCoursesExist(courses);
 
     const graph = new Map<string, string[]>();
     const inDegree = new Map<string, number>();
 
-    // Construir el grafo y el conteo de grados de entrada
     courses.forEach(({ desiredCourse, requiredCourse }) => {
       if (!graph.has(requiredCourse)) graph.set(requiredCourse, []);
       if (!graph.has(desiredCourse)) graph.set(desiredCourse, []);
@@ -128,7 +133,7 @@ export class CoursesService {
       if (!inDegree.has(requiredCourse)) inDegree.set(requiredCourse, 0);
     });
 
-    // Ordenamiento topológico (Kahn's Algorithm)
+    // (Kahn's Algorithm)
     const queue = [...inDegree.keys()].filter((key) => inDegree.get(key) === 0);
     const order = [];
 
@@ -151,7 +156,6 @@ export class CoursesService {
       );
     }
 
-    // Convertir el orden a un arreglo de objetos con índice
     const formattedOrder = order.map((course, index) => ({
       course,
       order: index,

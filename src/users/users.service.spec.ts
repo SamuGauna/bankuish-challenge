@@ -90,30 +90,26 @@ describe('UsersService', () => {
   });
 
   it('should retrieve assigned courses for a user', async () => {
-    jest
-      .spyOn(userRepository, 'findOne')
-      .mockResolvedValueOnce({ id: 'user-id' } as User);
-
     const mockCourses = [
       { id: 'course-1', name: 'Curso A' } as Course,
       { id: 'course-2', name: 'Curso B' } as Course,
     ];
 
-    jest.spyOn(userCourseRepository, 'find').mockResolvedValueOnce(
-      mockCourses.map(
-        (course) =>
-          ({
-            course,
-          }) as UserCourse,
-      ),
-    );
+    const mockUser = {
+      id: 'user-id',
+      name: 'Test User',
+      email: 'test@example.com',
+      courses: mockCourses,
+    } as unknown as User;
 
-    const result = await service.getUserCourses('user-id');
+    jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(mockUser);
 
-    expect(result).toEqual(mockCourses);
-    expect(userCourseRepository.find).toHaveBeenCalledWith({
-      where: { user: { id: 'user-id' } },
-      relations: ['course'],
+    const result = await service.getAssignedCourses('user-id');
+
+    expect(result).toEqual(mockUser);
+    expect(userRepository.findOne).toHaveBeenCalledWith({
+      where: { id: 'user-id' },
+      relations: ['courses'],
     });
   });
 });

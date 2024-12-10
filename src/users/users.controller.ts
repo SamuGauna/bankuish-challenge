@@ -5,6 +5,7 @@ import {
   Param,
   UseGuards,
   HttpStatus,
+  Body,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '../auth/auth.guard';
@@ -13,11 +14,35 @@ import { apiResponseWrapper } from '../utils/factories/apiResponseWrapper.factor
 import { apiErrorWrapper } from '../utils/factories/apiErrorWrapper.factory';
 import { ErrorResponseDto } from '../utils/dto/error.dto';
 import { UserCourse } from './entities/user-course.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 @UseGuards(AuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @ApiOperation({
+    summary: 'Create a user in db',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'User created',
+    type: User,
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'User already exists',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    type: apiErrorWrapper(ErrorResponseDto),
+    description: 'Internal server error',
+  })
+  @Post('/create')
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.createUser(createUserDto);
+  }
 
   @ApiOperation({ summary: 'Asign course to user' })
   @ApiResponse({
